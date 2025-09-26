@@ -1,0 +1,162 @@
+﻿@{
+    ViewBag.Title = "Home";
+}
+
+<div class="row">
+    <div class="col-lg-12">
+        <!-- Hero Section -->
+        <div class="jumbotron bg-primary text-white rounded p-5 mb-5">
+            <div class="container-fluid">
+                <h1 class="display-4 fw-bold">
+                    <i class="fas fa-building me-3"></i>Employee Management System
+                </h1>
+                <p class="lead">Manage your organization's employees and departments efficiently with our modern web application.</p>
+
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <hr class="my-4" style="border-color: rgba(255,255,255,0.3);">
+                    <p class="mb-4">Welcome back, <strong>@User.Identity.Name</strong>! Choose an action below to get started.</p>
+                }
+                else
+                {
+                    <hr class="my-4" style="border-color: rgba(255,255,255,0.3);">
+                    <p class="mb-4">Please login to access the system features.</p>
+                    <a class="btn btn-light btn-lg me-3" href="@Url.Action("Login", "Account")">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login
+                    </a>
+                    @* <a class="btn btn-outline-light btn-lg" href="@Url.Action("Register", "Account")">
+                        <i class="fas fa-user-plus me-2"></i>Register
+                    </a> *@
+                }
+            </div>
+        </div>
+
+        @if (User.Identity.IsAuthenticated)
+        {
+            <!-- Quick Actions -->
+            <div class="row mb-5">
+                <div class="col-md-6">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body text-center">
+                            <div class="mb-3">
+                                <i class="fas fa-users fa-3x text-primary"></i>
+                            </div>
+                            <h4 class="card-title">Employees</h4>
+                            <p class="card-text text-muted">View and manage employee information, including personal details, salaries, and department assignments.</p>
+                            <div class="d-grid gap-2">
+                                <a href="@Url.Action("Index", "Employee")" class="btn btn-primary">
+                                    <i class="fas fa-eye me-1"></i>View Employees
+                                </a>
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <a href="@Url.Action("Create", "Employee")" class="btn btn-outline-primary">
+                                        <i class="fas fa-plus me-1"></i>Add New Employee
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body text-center">
+                            <div class="mb-3">
+                                <i class="fas fa-sitemap fa-3x text-primary"></i>
+                            </div>
+                            <h4 class="card-title">Departments</h4>
+                            <p class="card-text text-muted">Organize your company structure by managing departments and assigning employees to their respective teams.</p>
+                            <div class="d-grid gap-2">
+                                <a href="@Url.Action("Index", "Department")" class="btn btn-primary">
+                                    <i class="fas fa-eye me-1"></i>View Departments
+                                </a>
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <a href="@Url.Action("Create", "Department")" class="btn btn-outline-primary">
+                                        <i class="fas fa-plus me-1"></i>Add New Department
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @if (User.IsInRole("Admin"))
+            {
+                <!-- Admin Features -->
+                <div class="card shadow-sm">
+                    <div class="card-header bg-light">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-crown me-2 text-warning"></i>Admin Features
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                                    <a href="@Url.Action("Dashboard", "Home")" class="btn btn-outline-info">
+                                        <i class="fas fa-chart-bar me-2"></i>Dashboard & Reports
+                                    </a>
+                      
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+
+        <!-- Features Section -->
+        <div class="row mt-5">
+            <div class="col-lg-12">
+                <h2 class="text-center mb-4">System Features</h2>
+                <div class="row">
+                    <div class="col-md-4 mb-4">
+                        <div class="text-center">
+                            <div class="mb-3">
+                                <i class="fas fa-shield-alt fa-2x text-primary"></i>
+                            </div>
+                            <h5>Secure Authentication</h5>
+                            <p class="text-muted">Role-based access control ensures that only authorized users can perform specific actions.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="text-center">
+                            <div class="mb-3">
+                                <i class="fas fa-mobile-alt fa-2x text-primary"></i>
+                            </div>
+                            <h5>Responsive Design</h5>
+                            <p class="text-muted">Access the system from any device - desktop, tablet, or mobile phone with full functionality.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="text-center">
+                            <div class="mb-3">
+                                <i class="fas fa-chart-line fa-2x text-primary"></i>
+                            </div>
+                            <h5>Analytics & Reports</h5>
+                            <p class="text-muted">Get insights into your workforce with detailed reports and analytics dashboard.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        // Add smooth scrolling animation
+        $(document).ready(function() {
+            $('a[href*="#"]').not('[href="#"]').not('[href="#0"]').click(function(event) {
+                if (location.pathname.replace(/^\//, '') == this.pathname.replace(/^\//, '') && location.hostname == this.hostname) {
+                    var target = $(this.hash);
+                    target = target.length ? target : $('[name=' + this.hash.slice(1) + ']');
+                    if (target.length) {
+                        event.preventDefault();
+                        $('html, body').animate({
+                            scrollTop: target.offset().top
+                        }, 1000);
+                    }
+                }
+            });
+        });
+    </script>
+}

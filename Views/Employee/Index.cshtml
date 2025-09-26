@@ -1,0 +1,196 @@
+﻿@model IEnumerable<EmployeeManagement.Models.Employee>
+
+@{
+    ViewBag.Title = "Employees";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="text-primary">
+        <i class="fas fa-users me-2"></i>Employees
+        <small class="text-muted">(@Model.Count() employees)</small>
+    </h2>
+    <div>
+        @if (User.IsInRole("Admin"))
+        {
+            @* <a href="@Url.Action("Search")" class="btn btn-outline-secondary me-2">
+                <i class="fas fa-search me-1"></i>Advanced Search
+            </a>
+            <a href="@Url.Action("ExportToExcel")" class="btn btn-success me-2">
+                <i class="fas fa-file-excel me-1"></i>Export Excel
+            </a> *@
+            <a href="@Url.Action("Create")" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i>Add Employee
+            </a>
+        }
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        @if (Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Employee</th>
+                            <th>Contact Info</th>
+                            <th>Department</th>
+                            <th class="text-end">Salary</th>
+                            <th>Hire Date</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center text-white me-3"
+                                             style="width: 45px; height: 45px; font-size: 14px;">
+                                            @(item.FirstName.Substring(0, 1) + item.LastName.Substring(0, 1))
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold">@item.FullName</div>
+                                            <small class="text-muted">#EMP@(item.Id.ToString("000"))</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>
+                                        <div><i class="fas fa-envelope text-muted me-1"></i>@item.Email</div>
+                                        @if (!string.IsNullOrEmpty(item.Phone))
+                                        {
+                                            <div><i class="fas fa-phone text-muted me-1"></i>@item.Phone</div>
+                                        }
+                                    </div>
+                                </td>
+                                <td>
+                                    @if (item.Department != null)
+                                    {
+                                        <a href="@Url.Action("Details", "Department", new { id = item.Department.Id })"
+                                           class="badge bg-primary text-decoration-none">
+                                            @item.Department.Name
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Not Assigned</span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <span class="fw-bold text-success">@item.Salary.ToString("C")</span>
+                                </td>
+                                <td>
+                                    <div>@item.HireDate.ToString("MMM dd, yyyy")</div>
+                                    <small class="text-muted">
+                                        @{
+                                            var years = (DateTime.Now - item.HireDate).Days / 365.25;
+                                        }
+                                        @years.ToString("F1") years
+                                    </small>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="@Url.Action("Details", new { id = item.Id })"
+                                           class="btn btn-outline-primary" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        @if (User.IsInRole("Admin"))
+                                        {
+                                            <a href="@Url.Action("Edit", new { id = item.Id })"
+                                               class="btn btn-outline-secondary" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-outline-danger"
+                                                    onclick="confirmDelete(@item.Id, '@item.FullName')" title="Delete">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-users fa-4x text-muted mb-3"></i>
+                <h4 class="text-muted">No employees found</h4>
+                @if (User.IsInRole("Admin"))
+                {
+                    <p class="text-muted mb-4">Get started by adding your first employee to the system.</p>
+                    <a href="@Url.Action("Create")" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>Add First Employee
+                    </a>
+                }
+                else
+                {
+                    <p class="text-muted">Contact your administrator to add employees to the system.</p>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+@if (User.IsInRole("Admin"))
+{
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">
+                        <i class="fas fa-exclamation-triangle text-warning me-2"></i>Confirm Delete
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete <strong id="employeeName"></strong>?</p>
+                    <div class="alert alert-warning">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Warning:</strong> This action will deactivate the employee record but preserve it for historical purposes.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Cancel
+                    </button>
+                    <form id="deleteForm" method="post" style="display: inline;">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-1"></i>Delete Employee
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section scripts {
+    <script>
+        function confirmDelete(employeeId, employeeName) {
+            document.getElementById('employeeName').textContent = employeeName;
+            document.getElementById('deleteForm').action = '@Url.Action("Delete")/' + employeeId;
+            new bootstrap.Modal(document.getElementById('deleteModal')).show();
+        }
+
+        // Add loading animation to export button
+        $('a[href*="ExportToExcel"]').click(function() {
+            var btn = $(this);
+            var originalText = btn.html();
+            btn.html('<i class="fas fa-spinner fa-spin me-1"></i>Exporting...');
+            btn.addClass('disabled');
+
+            setTimeout(function() {
+                btn.html(originalText);
+                btn.removeClass('disabled');
+            }, 3000);
+        });
+    </script>
+}

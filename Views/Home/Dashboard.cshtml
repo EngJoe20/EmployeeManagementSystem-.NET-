@@ -1,0 +1,84 @@
+﻿@model Employee_Management_System.Models.ViewModels.DashboardViewModel
+
+@{
+    ViewBag.Title = "Dashboard";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4">Dashboard</h2>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Total Employees</h5>
+                    <p class="card-text">@Model.TotalEmployees</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Total Departments</h5>
+                    <p class="card-text">@Model.TotalDepartments</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Average Salary</h5>
+                    <p class="card-text">@Model.AverageSalary.ToString("C")</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-danger mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">New Hires This Month</h5>
+                    <p class="card-text">@Model.NewHiresThisMonth</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h3>Department Statistics</h3>
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>Department</th>
+                <th>Employee Count</th>
+                <th>Average Salary</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var dept in Model.DepartmentStats)
+            {
+                <tr>
+                    <td>@dept.DepartmentName</td>
+                    <td>@dept.EmployeeCount</td>
+                    <td>@dept.AverageSalary.ToString("C")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h3>Monthly Hires</h3>
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>Month</th>
+                <th>Hires</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var month in Model.MonthlyHires)
+            {
+                <tr>
+                    <td>@month.Month</td>
+                    <td>@month.Count</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

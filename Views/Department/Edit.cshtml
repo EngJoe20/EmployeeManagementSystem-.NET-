@@ -1,0 +1,292 @@
+﻿@model EmployeeManagement.Models.Department
+
+@{
+    ViewBag.Title = "Edit Department";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-edit me-2"></i>Edit Department
+                </h4>
+            </div>
+            <div class="card-body">
+                <!-- Department Info -->
+                <div class="mb-3">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Department ID:</strong> #DEPT@(Model.Id.ToString("00"))
+                        <span class="float-end">
+                            <strong>Employees:</strong> @Model.Employees.Count(e => e.IsActive)
+                        </span>
+                    </div>
+                </div>
+
+                @using (Html.BeginForm("Edit", "Department", FormMethod.Post, new { @class = "needs-validation", novalidate = "novalidate" }))
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.HiddenFor(m => m.Id)
+                    @Html.HiddenFor(m => m.CreatedDate)
+                    @Html.HiddenFor(m => m.IsActive)
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                @Html.LabelFor(m => m.Name, new { @class = "form-label required" })
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-building"></i></span>
+                                    @Html.TextBoxFor(m => m.Name, new {
+                                    @class = "form-control",
+                                                                placeholder = "Enter department name",
+                                                                required = "required",
+                                                                maxlength = "100"
+                                                                })
+                            </div>
+                            @Html.ValidationMessageFor(m => m.Name, "", new { @class = "text-danger small" })
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Current Status</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-check-circle text-success"></i></span>
+                                <input type="text" class="form-control" value="Active" readonly>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    @Html.LabelFor(m => m.Description, new { @class = "form-label" })
+                    @Html.TextAreaFor(m => m.Description, new {
+                                        @class = "form-control",
+                                        rows = "4",
+                                        placeholder = "Enter department description (optional)",
+                                        maxlength = "500"
+                                        })
+                    @Html.ValidationMessageFor(m => m.Description, "", new { @class = "text-danger small" })
+                    <div class="form-text">
+                        <span id="charCount">@(Model.Description?.Length ?? 0)</span>/500 characters
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <a href="@Url.Action("Index")" class="btn btn-secondary me-2">
+                            <i class="fas fa-arrow-left me-1"></i>Back to List
+                        </a>
+                        <a href="@Url.Action("Details", new { id = Model.Id })" class="btn btn-outline-info">
+                            <i class="fas fa-eye me-1"></i>View Details
+                        </a>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="updateBtn">
+                        <i class="fas fa-save me-1"></i>Update Department
+                    </button>
+                </div>
+                                }
+            </div>
+        </div>
+
+        <!-- Department Employees -->
+        @if (Model.Employees.Any(e => e.IsActive))
+        {
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-users me-2"></i>Department Employees (@Model.Employees.Count(e => e.IsActive))
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        @foreach (var employee in Model.Employees.Where(e => e.IsActive).Take(6))
+                        {
+                            <div class="col-md-6 col-lg-4 mb-3">
+                                <div class="card bg-light">
+                                    <div class="card-body py-2">
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center text-white me-2"
+                                                 style="width: 35px; height: 35px; font-size: 12px;">
+                                                @employee.FirstName.Substring(0, 1)@employee.LastName.Substring(0, 1)
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <div class="fw-bold small">@employee.FullName</div>
+                                                <small class="text-muted">@employee.Salary.ToString("C")</small>
+                                            </div>
+                                            <a href="@Url.Action("Details", "Employee", new { id = employee.Id })"
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    @if (Model.Employees.Count(e => e.IsActive) > 6)
+                    {
+                        <div class="text-center">
+                            <a href="@Url.Action("Details", new { id = Model.Id })" class="btn btn-outline-primary">
+                                View All @Model.Employees.Count(e => e.IsActive) Employees
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        <!-- Quick Actions -->
+        <div class="card shadow-sm mt-4">
+            <div class="card-header bg-light">
+                <h6 class="mb-0">
+                    <i class="fas fa-bolt me-2"></i>Quick Actions
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-sm btn-outline-warning" onclick="resetForm()">
+                                <i class="fas fa-undo me-1"></i>Reset Changes
+                            </button>
+                            <a href="@Url.Action("Details", new { id = Model.Id })" class="btn btn-sm btn-outline-info">
+                                <i class="fas fa-eye me-1"></i>Preview Department
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-grid gap-2">
+                            @if (!Model.Employees.Any(e => e.IsActive))
+                            {
+                                <button type="button" class="btn btn-sm btn-outline-danger"
+                                        onclick="confirmDelete(@Model.Id, '@Model.Name')">
+                                    <i class="fas fa-trash me-1"></i>Delete Department
+                                </button>
+                            }
+                            else
+                            {
+                                <button type="button" class="btn btn-sm btn-outline-secondary" disabled
+                                        title="Cannot delete department with active employees">
+                                    <i class="fas fa-trash me-1"></i>Cannot Delete
+                                </button>
+                            }
+                            <a href="@Url.Action("Create", "Employee", new { departmentId = Model.Id })"
+                               class="btn btn-sm btn-outline-success">
+                                <i class="fas fa-user-plus me-1"></i>Add Employee
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-header" style="display:none">
+                    <h5 class="modal-title">
+                        <i class="fas fa-exclamation-triangle text-warning me-2"></i>Confirm Delete
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete the department <strong id="departmentName"></strong>?</p>
+                    <div class="alert alert-warning">
+                        <i class="fas fa-info-circle me-2"></i>
+                        This action will deactivate the department but preserve it for historical purposes.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form id="deleteForm" method="post" style="display: inline;">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-danger">Delete Department</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+@section scripts {
+        <script>
+            $(document).ready(function() {
+                // Store original form values
+                var originalFormData = $('form').serialize();
+
+                // Form validation
+                $('form').on('submit', function(e) {
+                    if (!this.checkValidity()) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                    this.classList.add('was-validated');
+
+                    if (this.checkValidity()) {
+                        $('#updateBtn').html('<i class="fas fa-spinner fa-spin me-1"></i>Updating...').prop('disabled', true);
+                    }
+                });
+
+                // Character counter
+                $('#Description').on('input', function() {
+                    var length = $(this).val().length;
+                    $('#charCount').text(length);
+
+                    if (length > 400) {
+                        $('#charCount').addClass('text-warning');
+                    } else if (length > 450) {
+                        $('#charCount').addClass('text-danger').removeClass('text-warning');
+                    } else {
+                        $('#charCount').removeClass('text-warning text-danger');
+                    }
+                });
+
+                // Highlight changes
+                $('input[type="text"], textarea').on('input', function() {
+                    if ($(this).data('original') !== $(this).val()) {
+                        $(this).addClass('border-warning');
+                    } else {
+                        $(this).removeClass('border-warning');
+                    }
+                });
+
+                // Store original values
+                $('input[type="text"], textarea').each(function() {
+                    $(this).data('original', $(this).val());
+                });
+
+                // Real-time name validation
+                $('#Name').on('blur', function() {
+                    var name = $(this).val();
+                    var departmentId = $('#Id').val();
+                    if (name) {
+                        $.post('@Url.Action("CheckDepartmentNameExists", "Department")', {
+                            name: name,
+                            excludeId: departmentId
+                        }, function(data) {
+                            if (data.exists) {
+                                $('#Name').addClass('is-invalid');
+                                $('.field-validation-valid[data-valmsg-for="Name"]').text('A department with this name already exists.');
+                            }
+                        });
+                    }
+                });
+            });
+
+            function resetForm() {
+                if (confirm('Are you sure you want to reset all changes?')) {
+                    location.reload();
+                }
+            }
+
+            function confirmDelete(departmentId, departmentName) {
+                document.getElementById('departmentName').textContent = departmentName;
+                document.getElementById('deleteForm').action = '@Url.Action("Delete", "Department")/' + departmentId;
+                new bootstrap.Modal(document.getElementById('deleteModal')).show();
+            }
+        </script>
+}

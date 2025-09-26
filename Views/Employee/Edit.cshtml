@@ -1,0 +1,138 @@
+﻿@model EmployeeManagement.Models.ViewModels.EmployeeViewModel
+
+@{
+    ViewBag.Title = "Edit Employee";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Edit Employee</h4>
+            </div>
+            <div class="card-body">
+                @using (Html.BeginForm("Edit", "Employee", FormMethod.Post, new { @class = "needs-validation", novalidate = "novalidate" }))
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.HiddenFor(m => m.Id)
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            @Html.LabelFor(m => m.FirstName)
+                            @Html.TextBoxFor(m => m.FirstName, new { @class = "form-control", placeholder = "Enter first name", required = "required" })
+                            @Html.ValidationMessageFor(m => m.FirstName, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            @Html.LabelFor(m => m.LastName)
+                            @Html.TextBoxFor(m => m.LastName, new { @class = "form-control", placeholder = "Enter last name", required = "required" })
+                            @Html.ValidationMessageFor(m => m.LastName, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            @Html.LabelFor(m => m.Email)
+                            @Html.TextBoxFor(m => m.Email, new { @class = "form-control", type = "email", placeholder = "example@company.com", required = "required", id = "Email" })
+                            @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger", id = "EmailError" })
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            @Html.LabelFor(m => m.Phone)
+                            @Html.TextBoxFor(m => m.Phone, new { @class = "form-control", placeholder = "Enter phone number", id = "Phone" })
+                            @Html.ValidationMessageFor(m => m.Phone, "", new { @class = "text-danger", id = "PhoneError" })
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            @Html.LabelFor(m => m.Salary)
+                            @Html.TextBoxFor(m => m.Salary, new { @class = "form-control", type = "number", step = "0.01", min = "1", placeholder = "0.00", required = "required", id = "Salary" })
+                            @Html.ValidationMessageFor(m => m.Salary, "", new { @class = "text-danger", id = "SalaryError" })
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            @Html.LabelFor(m => m.HireDate)
+                            @Html.TextBoxFor(m => m.HireDate, new { @class = "form-control", type = "date", required = "required", id = "HireDate" })
+                            @Html.ValidationMessageFor(m => m.HireDate, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        @Html.LabelFor(m => m.DepartmentId)
+                        @Html.DropDownListFor(m => m.DepartmentId, Model.Departments, "-- Select Department --", new { @class = "form-select", required = "required", id = "DepartmentId" })
+                        @Html.ValidationMessageFor(m => m.DepartmentId, "", new { @class = "text-danger", id = "DepartmentError" })
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" id="submitBtn">Update Employee</button>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            // Bootstrap validation
+            $('form').on('submit', function (e) {
+                if (!this.checkValidity()) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    $(this).addClass('was-validated');
+                } else {
+                    $('#submitBtn').html('<i class="fas fa-spinner fa-spin me-1"></i>Updating...').prop('disabled', true);
+                }
+            });
+
+            var currentEmail = '@Model.Email';
+            var currentId = '@Model.Id';
+
+            // Real-time Email validation via AJAX (ignore current employee email)
+            $('#Email').on('blur', function () {
+                var email = $(this).val();
+                if (email && email !== currentEmail) {
+                    $.post('@Url.Action("CheckEmailExists", "Employee")', { email: email, id: currentId }, function (data) {
+                        if (!data) {
+                            $('#Email').addClass('is-invalid');
+                            $('#EmailError').text('This email is already in use.');
+                        } else {
+                            $('#Email').removeClass('is-invalid').addClass('is-valid');
+                            $('#EmailError').text('');
+                        }
+                    });
+                } else {
+                    $('#Email').removeClass('is-invalid').addClass('is-valid');
+                    $('#EmailError').text('');
+                }
+            });
+
+            // Real-time Phone validation
+            $('#Phone').on('input', function () {
+                var val = $(this).val();
+                var regex = /^\+?\d{10,15}$/;
+                if (!regex.test(val) && val.length > 0) {
+                    $('#Phone').addClass('is-invalid');
+                    $('#PhoneError').text('Phone must be 10-15 digits, optional +.');
+                } else {
+                    $('#Phone').removeClass('is-invalid').addClass('is-valid');
+                    $('#PhoneError').text('');
+                }
+            });
+
+            // Real-time Salary validation
+            $('#Salary').on('input', function () {
+                var val = parseFloat($(this).val());
+                if (isNaN(val) || val < 1) {
+                    $('#Salary').addClass('is-invalid');
+                    $('#SalaryError').text('Salary must be greater than 0.');
+                } else {
+                    $('#Salary').removeClass('is-invalid').addClass('is-valid');
+                    $('#SalaryError').text('');
+                }
+            });
+
+            // Default hire date to today if empty
+            if (!$('#HireDate').val()) {
+                $('#HireDate').val(new Date().toISOString().split('T')[0]);
+            }
+        });
+    </script>
+}
